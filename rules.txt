@@ -1,0 +1,32 @@
+1. This Blackjack game will be played by you (player) and a dealer (cpu)
+
+2. Player will start off the game with $___, and had to place a bet (at least $1) to play one round 
+
+3. Cards with different values will be dealt to the player and the dealer:
+    - King (K), Queen (Q), Jack (J), Ten (Ten) all have the same value: 10
+    - Ace (A) can be interpreted either as 1 or 11, depending on whichever value can benefit your situation better.
+
+4: You lose if the total value of your cards exceeds 21 points (bust). 
+    
+5: You win if the total value of your cards beat that of the dealers', or had a natural Blackjack  
+
+
+6. Game Procedure 
+    - In the beginning of each round, 2 cards will be dealt to the player and the dealer respectively
+    - Player will have their cards all facing down, while one of the dealer's card will be revealed
+    - After the starting cards are dealt, the player can decide if they would like to hit or stay:
+        - hit: to be dealt another card. Player can hit continuously until they bust (having a total card value exceeding 21)
+        - stay: player's hand is locked and the player term is over
+    - When the player's term is over, the dealer will reveal another face-down card and hit or stay according to the following rules
+        - if their hand has a value of 17 or more they must stay 
+        - if their hand has a value of 16 or less they must hit 
+        - the dealer must continue to hit until their hand has a value of 17 or greater. If their hand exceeds 21, they immediately lose
+    - Once the dealer stays or busts, the hand/round is over and the winner is decided by the player with the hand that has the highest value not exceeding 21
+
+7. Bet allocation: 
+    - In the case player wins: player gains 2x the bet amount
+    - In the case of player winning by natural (Blackjack): player receive 1.5x the bet amount in return 
+    - In the case of a tie: player get their bet amount refunded
+    - In the case of player loses: player loses their bet amount
+
+  
