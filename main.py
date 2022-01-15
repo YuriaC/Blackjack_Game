@@ -1,4 +1,4 @@
-import black_jack
+from black_jack import Black_Jack
 
 def ask_if_play_more():
     choice = input("Play another round? (Y/N): ")
@@ -22,7 +22,7 @@ def ask_if_play_more():
                     return 0
 
 
-game1 = black_jack.Black_Jack()
+game1 = Black_Jack()
 
 run_check = 1
 while run_check == 1:

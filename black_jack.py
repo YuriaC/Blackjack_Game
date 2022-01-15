@@ -61,18 +61,20 @@ class Black_Jack(Game):
             if self.place_bet() == 1:
                 self.card_deck = Black_Jack.create_deck()  
                 if self.deal_card() == 1:
-                    while self.player_term() != 0 and self.dealer_term() != 0 :
+                    counter = 1
+                    while self.player_term() != 0 and self.dealer_term() != 0:
                         self.player_term()
                         self.dealer_term()
-        
-        # residual data clean up
-        self.card_deck.clear()
-        self.bet_amount = 0
-        self.player_hand.clear()
-        self.player_point = 0
-        self.dealer_hand.clear()
-        self.dealer_point = 0      
-    
+                        counter += 1
+
+                        if counter > 2:  # Seek better implementation in the future. Preferably smart detection of both "stay" decision
+                            print("Seems like the game is at an impasse. The one with a higher hand value will win this round. ")
+                            result = self.determine_winner()
+                            self.dispense_prize(result)
+                            break
+
+        self.reset_game()
+
     def place_bet(self): 
         '''a function ask player to make a bet, and validates the bet amount'''
         
@@ -100,6 +102,8 @@ class Black_Jack(Game):
                 bet_amount = input("Invalid input. Please give a positive number only: ")
 
     def deal_card(self):
+        """ a function that initiate the game by serving both players 2 cards and predicts any possible occurrences of natural"""
+        
         Black_Jack.shuffle_card(self.card_deck)
         # deal cards
         self.player_hand.append(self.card_deck.pop())
@@ -119,28 +123,28 @@ class Black_Jack(Game):
         if self.player_point == 21 and self.dealer_point == 21:  # in case of both get natural hands
             self.show_dealer_hand()
             print("Both the dealer and the player hit Blackjack!")
-            print(f"The game tied. You got ${self.bet_amount}. Your balance is ${self.balance}")
+            self.dispense_prize(4)  # game ends with a tie
             return 0
 
 
         elif self.player_point == 21:    # in case of the player win by natural
             print("You hit the blackjack!")
-            prize = self.bet_amount *1.5  # reward per the rule
-            self.balance += prize  # update player balance
-            print(f"You win! You get ${prize}. Your balance is ${self.balance}")
+            self.dispense_prize(1)
             return 0
     
         
         elif self.dealer_point == 21: # in case of the dealer win by natural
             self.show_dealer_hand() 
             print("The dealer hits the blackjack!")
-            print(f"You lose! You lost ${self.bet_amount}. Your balance is ${self.balance}")
+            self.dispense_prize(3)
             return 0
         
         else:  # no natural occurs, game move on to the next phase
             return 1
 
     def player_term(self):
+        """ a function that serves to guide player's action in player's term """
+
         action = input("Would you like to hit or stay? ")
         while True:
             if not type(action) == str:
@@ -160,24 +164,19 @@ class Black_Jack(Game):
 
                         if self.player_point > 21:
                             self.show_player_hand()
-                            print(f"Your hand value is over 21 and you lose ${self.bet_amount}")
+                            print(f"Your hand value is over 21.", end = " ")
+                            self.dispense_prize(3)
                             return 0
                         
                         elif self.player_point == 21:
                             self.show_player_hand()
-                            prize = self.bet_amount * 2
-                            self.balance += prize
-                            print(f"Blackjack! You win ${prize} :)")
+                            print("Blackjack!", end = " ")
+                            self.dispense_prize(2)                            
                             return 0
                         
                         else:
                             self.show_player_hand()
-                            action = input("Would you like to hit or stay? ")
-                    
-                    else:
-                        self.show_player_hand()
-                        print(f"Your hand value is over 21 and you lose {self.bet_amount}")
-                        return 0
+                            action = input("Would you like to hit or stay? ")                   
 
                 elif action == "stay":
                     self.show_dealer_hand()
@@ -188,16 +187,17 @@ class Black_Jack(Game):
                     action = input("Would you like to hit or stay? ")
 
     def dealer_term(self):
+        """ a function that serves to guide dealer's action in dealer's term """
+        
         while True: 
             if self.dealer_point > 21:  # in case of dealer busts
-                prize = self.bet_amount * 2
-                self.balance += prize
-                print(f"Dealer busts. You win ${prize}! Your balance is ${self.balance}.")
+                print("Dealer busts.", end = " ") 
+                self.dispense_prize(2)
                 return 0
 
             elif self.dealer_point == 21:  # incase of dealer wins
-                print("The dealer hits the blackjack!")
-                print(f"You lose! You lost ${self.bet_amount}. Your balance is ${self.balance}")
+                print("The dealer hits the blackjack!", end = " ")
+                self.dispense_prize(3)
                 return 0
 
             elif self.dealer_point >= 17:  # in the case of dealer has point larger than 17 but haven't busted
@@ -213,15 +213,62 @@ class Black_Jack(Game):
                 print(", ".join(self.dealer_hand))  
 
     def show_player_hand(self):
+        """ a function serves to print out cards on the player's hand """
         print("You now have:", end = " ")
         print(", ".join(self.player_hand)) 
 
     def show_dealer_hand(self):
+        """ a function serves to print out cards on the dealer's hand """
         print("The dealer has:", end = " ")
         print(", ".join(self.dealer_hand)) 
 
+    def dispense_prize(self, value): 
+        """ a function serves to dispense appropriate prize to the player per the game result index (value)"""
+        
+        if value == 1:  # 1 = player win by natural case
+            prize = self.bet_amount * 1.5  # reward per the rule
+            self.balance += prize  # update player balance
+            print(f"You win! You get ${prize}. Your balance is ${self.balance}")
+
+        if value == 2:  # 2 = player win without natural case
+            prize = self.bet_amount * 2  # reward per the rule
+            self.balance += prize  # update player balance
+            print(f"You win! You get ${prize}. Your balance is ${self.balance}")
+
+        if value == 3:  # 3 = dealer win case
+            print(f"You lose! You lose ${self.bet_amount}. Your balance is ${self.balance}")
+
+        if value == 4:  # 4 = tie  case
+            self.balance += self.bet_amount
+            print(f"The game tied. You get ${self.bet_amount}. Your balance is ${self.balance}")
+
+    def determine_winner(self):
+        """ a function serves to determine the winner of a round if the round gets into impasse """
+        
+        print(f"Your hand value is: {self.player_point} points. The dealer's hand value is: {self.dealer_point} points")
+        
+        if self.player_point == self.dealer_point:# in case of tie
+            return 4
+
+        elif self.player_point < self.dealer_point:  # in the case of dealer win
+            return 3
+        
+        else: # in the case of player win
+            return 2 
+            
+    def reset_game(self):
+        """ a function for cleaning up residual data"""
+
+        self.card_deck.clear()
+        self.bet_amount = 0
+        self.player_hand.clear()
+        self.player_point = 0
+        self.dealer_hand.clear()
+        self.dealer_point = 0      
+
     @staticmethod
     def point_calculation(lst):
+        """ a static method that serves to provide point calculation logic """
         # J, Q, K, T all = 10 pts
         # numerical face has value equivalent to their number
         # A can be either 1 or 11
@@ -246,6 +293,7 @@ class Black_Jack(Game):
 
     @staticmethod
     def sort_cards(card):
+        "A function that serves to sort an existing card list. Sort by the order of numerical value, T/J/Q/K, and lastly A. "
         if card[0] in ["J", "Q", "K", "T"]:
             return 1
             
